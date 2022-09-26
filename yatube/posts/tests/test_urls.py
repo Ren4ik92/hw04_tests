@@ -78,15 +78,14 @@ class PostsURLTests(TestCase):
             'posts/group_list.html': reverse('posts:postsname',
                                              kwargs={'slug': self.group.slug}),
             'posts/profile.html': reverse('posts:profile',
-                                          kwargs=
-                                          {'username': self.user.username}),
+                                          kwargs={
+                                              'username': self.user.username}),
             'posts/post_detail.html': reverse('posts:post_detail',
                                               kwargs={
                                                   'post_id': self.post.id}),
             'posts/create_post.html': reverse('posts:post_edit',
                                               kwargs={
                                                   'post_id': self.post.id}),
-            'posts/create_post.html': reverse('posts:post_create'),
         }
         for template, address in urls_templates.items():
             with self.subTest(address=address):
