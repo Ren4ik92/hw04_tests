@@ -12,6 +12,7 @@ class PostPagesTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
+        cls.user2 = User.objects.create_user(username='другой пользователь')
         cls.group = Group.objects.create(
             title='group',
             slug='slug',
@@ -108,6 +109,24 @@ class PostPagesTests(TestCase):
         self.assertEqual(context_form, post)
         self.assertEqual(context_author, post.author)
 
+    def test_post_added_correctly_user2(self):
+        """Пост при создании не добавляется другому пользователю"""
+        group2 = Group.objects.create(title='Тестовая группа 2',
+                                      slug='test_group2')
+        posts_count = Post.objects.filter(group=self.group).count()
+        post = Post.objects.create(
+            text='Тестовый пост от другого автора',
+            author=self.user2,
+            group=group2)
+        response_profile = self.authorized_client.get(
+            reverse('posts:profile',
+                    kwargs={'username': f'{self.user.username}'}))
+        group = Post.objects.filter(group=self.group).count()
+        profile = response_profile.context['page_obj']
+        self.assertEqual(group, posts_count, 'поста нет в другой группе')
+        self.assertNotIn(post, profile,
+                         'поста нет в группе другого пользователя')
+
 
 class PaginatorTests(TestCase):
     @classmethod
@@ -167,3 +186,5 @@ class PaginatorTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': self.user.username}) + '?page=2'))
         self.assertEqual(len(response.context['page_obj']), 3)
+
+

@@ -66,10 +66,15 @@ class PostsURLTests(TestCase):
 
     def test_url_redirect_anonymous(self):
         """Страница перенаправит пользователся на login"""
-        response = self.guest_client.get(
-            reverse('posts:post_create')
-        )
-        self.assertRedirects(response, '/auth/login/?next=/create/')
+        url_templates_names = {
+            "/create/": "/auth/login/?next=/create/",
+            "/posts/1/edit/": "/auth/login/?next=/posts/1/edit/",
+        }
+        for address, template in url_templates_names.items():
+            with self.subTest(address=address):
+                response = self.guest_client.get(address)
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+                self.assertRedirects(response, template)
 
     def test_urls_templates(self):
         """Тест на соотвецтвие адресов и шаблонов"""
@@ -91,3 +96,18 @@ class PostsURLTests(TestCase):
             with self.subTest(address=address):
                 response = self.author_client.get(address)
                 self.assertTemplateUsed(response, template)
+
+    def test_noname_user_create_post(self):
+        """ Проверка создания записи не авторизированным пользователем ."""
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'тестовый текст',
+            'group': self.group.id,
+        }
+        response = self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(Post.objects.count(), posts_count)
