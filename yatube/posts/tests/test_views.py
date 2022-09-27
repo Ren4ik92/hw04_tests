@@ -138,13 +138,9 @@ class PaginatorTests(TestCase):
             slug='test_slug',
             description='Тестовое описание',
         )
-        for i in range(0, 13):
-            cls.post = Post.objects.create(
-                author=cls.user,
-                group=cls.group,
-                text='Тестовый текст',
-                pub_date='22.09.2022',
-            )
+        Post.objects.bulk_create(
+            Post(text=f'Post {i}', author=cls.user, group=cls.group)
+            for i in range(13))
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
 
@@ -186,5 +182,3 @@ class PaginatorTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': self.user.username}) + '?page=2'))
         self.assertEqual(len(response.context['page_obj']), 3)
-
-
