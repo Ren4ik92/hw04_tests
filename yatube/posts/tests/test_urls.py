@@ -76,6 +76,20 @@ class PostsURLTests(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.FOUND)
                 self.assertRedirects(response, template)
 
+    def test_reddirect_guest_client(self):
+        '''Проверка редиректа неавторизованного пользователя'''
+        self.post = Post.objects.create(text='Тестовый текст',
+                                        author=self.user,
+                                        group=self.group)
+        form_data = {'text': 'Текст записанный в форму'}
+        response = self.guest_client.post(
+            reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertRedirects(response,
+                             f'/auth/login/?next=/posts/{self.post.id}/edit/')
+
     def test_urls_templates(self):
         """Тест на соотвецтвие адресов и шаблонов"""
         urls_templates = {

@@ -30,10 +30,10 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Валидная форма создает запись в post."""
-        post_count = Post.objects.count()
-        old_posts = Post.objects.all().values_list('id', flat=True)
+        post_count = Post.objects.all()
+        post_count_set = set(post_count)
         form_data = {
-            'text': 'Новый пост созданный через форму',
+            'text': 'Введенный в форму текст',
             'group': self.group.pk,
         }
         response = self.authorized_author.post(
@@ -41,15 +41,21 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        new_posts = Post.objects.exclude(
-            id__contains=old_posts).values('text', 'group', 'author')
-        self.assertRedirects(response, reverse('posts:profile', kwargs={
-            'username': self.author}))
-        self.assertEqual(Post.objects.count(), post_count + 1)
-        self.assertEqual(new_posts.count(), 1)
-        self.assertEqual(new_posts[0]['text'], form_data['text'])
-        self.assertEqual(new_posts[0]['group'], form_data['group'])
-        self.assertEqual(new_posts[0]['author'], self.author.pk)
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile', kwargs={'username': self.author.username}
+            )
+        )
+        new_post = Post.objects.all()
+        new_post_set = set(new_post)
+
+        difference_sets_of_posts = new_post_set.difference(post_count_set)
+        self.assertEqual(len(difference_sets_of_posts), 1)
+        last_post = difference_sets_of_posts.pop()
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.group.pk, form_data['group'])
+        self.assertEqual(last_post.author, self.author)
 
     def test_edit_post(self):
         """Валидная форма перезаписывает запись."""
