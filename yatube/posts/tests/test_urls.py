@@ -16,6 +16,7 @@ class PostsURLTests(TestCase):
         """ Создаем тестовые экземпляры постов."""
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
+        cls.non_auth = User.objects.create_user(username='nonauth')
         cls.group = Group.objects.create(
             title='group',
             slug='slug',
@@ -31,7 +32,7 @@ class PostsURLTests(TestCase):
         """Создаем авторизованного и неавторизованного клиента"""
         self.guest_client = Client()
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
+        self.authorized_client.force_login(self.non_auth)
         self.author_client = Client()
         self.author_client.force_login(self.user)
 
@@ -81,7 +82,8 @@ class PostsURLTests(TestCase):
         response = self.authorized_client.get(
             f'/posts/{self.post.pk}/edit/', follow=True
         )
-        self.assertRedirects(response, (f'/posts/{self.post.pk}/')
+        self.assertRedirects(response,
+                             f'/posts/{self.post.pk}/'
                              )
 
     def test_reddirect_guest_client(self):
