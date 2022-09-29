@@ -30,8 +30,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Валидная форма создает запись в post."""
-        post_count = Post.objects.all()
-        post_count_set = set(post_count)
+        post_count = Post.objects.count() + 1
         form_data = {
             'text': 'Введенный в форму текст',
             'group': self.group.pk,
@@ -47,12 +46,9 @@ class PostCreateFormTests(TestCase):
                 'posts:profile', kwargs={'username': self.author.username}
             )
         )
-        new_post = Post.objects.all()
-        new_post_set = set(new_post)
 
-        difference_sets_of_posts = new_post_set.difference(post_count_set)
-        self.assertEqual(len(difference_sets_of_posts), 1)
-        last_post = difference_sets_of_posts.pop()
+        self.assertEqual(post_count, Post.objects.count())
+        last_post = Post.objects.latest('pk')
         self.assertEqual(last_post.text, form_data['text'])
         self.assertEqual(last_post.group.pk, form_data['group'])
         self.assertEqual(last_post.author, self.author)

@@ -76,6 +76,14 @@ class PostsURLTests(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.FOUND)
                 self.assertRedirects(response, template)
 
+    def test_url_redirect_authorized_client_post_edit(self):
+        """Перенаправление пользователя на post detail"""
+        response = self.authorized_client.get(
+            f'/posts/{self.post.pk}/edit/', follow=True
+        )
+        self.assertRedirects(response, (f'/posts/{self.post.pk}/')
+                             )
+
     def test_reddirect_guest_client(self):
         '''Проверка редиректа неавторизованного пользователя'''
         self.post = Post.objects.create(text='Тестовый текст',
