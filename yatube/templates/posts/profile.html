@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load thumbnail %}
 {% block title %}Профайл пользователя {{ author.get_full_name }}{% endblock %}
 
 {% block content %}
@@ -18,6 +19,11 @@
                   </ul>
                   <p>
                     {{ post.text }}
+                      {% if post.image %}
+          {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+            <img class="card-img my-2" src="{{ im.url }}">
+          {% endthumbnail %}
+          {% endif %}
                   </p>
                   <a href="{% url 'posts:post_detail' post.pk %}">Подробная информация </a>
                 </article>

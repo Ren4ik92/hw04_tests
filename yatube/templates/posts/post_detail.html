@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load thumbnail %}
 {% block title %}Пост {{ post }}|truncatechars:30  }}{% endblock %}
 
 {% block content %}
@@ -23,6 +24,12 @@
               <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a>
             </li>
           </ul>
+          {% if post.image %}
+          {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+            <img class="card-img my-2" src="{{ im.url }}">
+          {% endthumbnail %}
+          {% endif %}
+        {% include 'includes/comments.html' %}
         </aside>
         <article class="col-12 col-md-9">
           <p>

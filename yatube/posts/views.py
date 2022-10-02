@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Group, User
-from .forms import PostForm
+from .models import Post, Group, User, Comment
+from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from .units import paginator_posts, MESSAGE_N
 
@@ -40,14 +40,18 @@ def profile(request, username):
 
 def post_detail(request, post_id, ):
     post = get_object_or_404(Post, pk=post_id)
+    comment = post.comments.all()
+    form = CommentForm(request.POST or None)
     context = {
         'post': post,
+        'comment': comment,
+        'form': form,
     }
     return render(request, 'posts/post_detail.html', context)
 
 
 @login_required
-def post_create(request):
+def post_create(request, post=None):
     if request.method == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
@@ -56,7 +60,11 @@ def post_create(request):
             post.save()
             return redirect('posts:profile', post.author)
         return render(request, 'posts/create_post.html', {'form': form})
-    form = PostForm()
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=post
+    )
     return render(request, 'posts/create_post.html', {'form': form})
 
 
@@ -65,9 +73,24 @@ def post_edit(request, post_id):
     post = Post.objects.get(pk=post_id)
     if request.user != post.author:
         return redirect('posts:post_detail', post_id=post_id)
-    form = PostForm(request.POST or None, instance=post)
+    form = PostForm(
+        request.POST or None,
+        instance=post,
+        files=request.FILES or None)
     if form.is_valid():
         form.save()
-        return redirect('posts:post_detail', post_id,)
+        return redirect('posts:post_detail', post_id, )
     return render(request, 'posts/create_post.html',
-                  {'form': form, 'is_edit': True},)
+                  {'form': form, 'is_edit': True}, )
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    form = Comment(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('posts:post_detail', post_id=post_id)
