@@ -40,11 +40,11 @@ def profile(request, username):
 
 def post_detail(request, post_id, ):
     post = get_object_or_404(Post, pk=post_id)
-    comment = post.comments.all()
+    comments = Comment.objects.filter(post=post)
     form = CommentForm(request.POST or None)
     context = {
         'post': post,
-        'comment': comment,
+        'comments': comments,
         'form': form,
     }
     return render(request, 'posts/post_detail.html', context)
@@ -87,7 +87,7 @@ def post_edit(request, post_id):
 @login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    form = Comment(request.POST or None)
+    form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user

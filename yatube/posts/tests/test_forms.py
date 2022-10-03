@@ -1,12 +1,12 @@
 import shutil
-
+import tempfile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
-import tempfile
-from ..models import Post, Group, User
+from ..models import Post, Group, User, Comment
 from ..forms import PostForm
+
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -114,4 +114,20 @@ class PostCreateFormTests(TestCase):
                 author=self.author,
                 group=self.group2,
             ).exists()
+        )
+
+    def test_comment_count(self):
+        comment_count = Comment.objects.count()
+        post_id = self.post.id
+        form_comment = {
+            'text': 'Новый комментарий'
+        }
+        response = self.authorized_author.post(
+            reverse('posts:add_comment', kwargs={'post_id': post_id}),
+            data=form_comment,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
+        self.assertTrue(
+            Comment.objects.filter(text='Новый комментарий').exists()
         )

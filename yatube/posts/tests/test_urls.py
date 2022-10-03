@@ -135,3 +135,11 @@ class PostsURLTests(TestCase):
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(Post.objects.count(), posts_count)
+
+    def test_comment_url(self):
+        """Страница /comment/ доступна авторизованному пользователю."""
+        post_id = self.post.id
+        response = self.authorized_client.get(
+            reverse("posts:add_comment", kwargs={"post_id": post_id})
+        )
+        self.assertEqual(response.status_code, 302)

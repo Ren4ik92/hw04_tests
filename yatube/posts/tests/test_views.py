@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from .test_forms import TEMP_MEDIA_ROOT
+
 from ..models import Post, Group
 from django import forms
 

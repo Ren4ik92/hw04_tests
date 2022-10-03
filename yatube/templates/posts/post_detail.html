@@ -29,12 +29,12 @@
             <img class="card-img my-2" src="{{ im.url }}">
           {% endthumbnail %}
           {% endif %}
-        {% include 'includes/comments.html' %}
         </aside>
         <article class="col-12 col-md-9">
-          <p>
+          <p style="word-wrap: break-word">
            {{ post.text }}
           </p>
+        {% include 'includes/comments.html' %}
           <p>
             {% if post.author == user %}
               <a href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>
