@@ -3,8 +3,10 @@ from .models import Post, Group, User, Comment
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from .units import paginator_posts, MESSAGE_N
+from django.views.decorators.cache import cache_page
 
 
+@cache_page(60 * 20)
 def index(request):
     template = 'posts/index.html'
     post_list = Post.objects.all().order_by('-pub_date')
